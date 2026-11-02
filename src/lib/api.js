@@ -28,6 +28,7 @@ export async function fetchAll() {
     announcements,
     activity,
     profiles,
+    manualStats,
   ] = await Promise.all([
     supabase.from('team_settings').select('*').eq('id', 1).maybeSingle(),
     supabase.from('players').select('*').order('sort_order').order('ign'),
@@ -49,9 +50,13 @@ export async function fetchAll() {
       .order('created_at', { ascending: false })
       .limit(100),
     supabase.from('profiles').select('*').order('created_at'),
+    supabase.from('player_manual_stats').select('*'),
   ])
 
-  // Surface the first real error so the UI can show it
+  // Surface the first real error so the UI can show it.
+  // player_manual_stats is deliberately left out of this check: it is added by
+  // supabase/04_manual_totals.sql, and the app must still work for anyone who
+  // has not run that file yet (they simply get no carried-over stats).
   const firstError = [
     settings, players, maps, dropSpots, matches, matchStats, tournaments,
     standings, opponents, opponentSpots, events, attendance, notes,
@@ -77,6 +82,9 @@ export async function fetchAll() {
     announcements: announcements.data || [],
     activity: activity.data || [],
     profiles: profiles.data || [],
+    manualStats: manualStats.data || [],
+    /** False until 04_manual_totals.sql has been run — used to show a hint. */
+    manualStatsReady: !manualStats.error,
   }
 }
 
@@ -157,6 +165,40 @@ export async function saveMatch(match, playerRows = []) {
 export async function deleteMatch(id) {
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw error
+}
+
+/* ---------------------------------------------------------------------------
+ * CARRIED-OVER (MANUAL) PLAYER TOTALS
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Saves one player's carry-over totals: the overall row plus one row per map.
+ *
+ * Each row is handled on its own rather than wiping the player's rows and
+ * re-inserting them, so a failure halfway through can never leave the player
+ * with nothing. A row that has been zeroed out is deleted instead of stored,
+ * which keeps the table free of rows full of noughts.
+ *
+ * @param {Array} rows  [{ id?, player_id, map_id, matches, finishes, ... }]
+ */
+export async function savePlayerManualStats(rows = []) {
+  for (const row of rows) {
+    const { id, blank, ...values } = row
+
+    if (blank) {
+      // Nothing to carry over. Remove the row if one was stored before.
+      if (id) {
+        const { error } = await supabase.from('player_manual_stats').delete().eq('id', id)
+        if (error) throw error
+      }
+      continue
+    }
+
+    const { error } = id
+      ? await supabase.from('player_manual_stats').update(values).eq('id', id)
+      : await supabase.from('player_manual_stats').insert(values)
+    if (error) throw error
+  }
 }
 
 /* ---------------------------------------------------------------------------

@@ -9,6 +9,7 @@ import { GitCompareArrows, ArrowLeftRight } from 'lucide-react'
 import { useData } from '@/context/DataContext'
 import {
   aggregateForPlayer,
+  manualScopeFor,
   derivePlayerStats,
   playerRating,
   radarProfile,
@@ -51,7 +52,7 @@ const COMPARISONS = [
 ]
 
 export default function Compare() {
-  const { players, matches, maps, statsIndex, settings } = useData()
+  const { players, matches, maps, statsIndex, manualIndex, settings } = useData()
 
   const [leftId, setLeftId] = useState(players[0]?.id || '')
   const [rightId, setRightId] = useState(players[1]?.id || '')
@@ -63,13 +64,20 @@ export default function Compare() {
     [matches, mapId, matchType, statsIndex],
   )
 
+  // Carry-over totals apply while the comparison is all-time or map-only.
+  // Picking a match type narrows it, and then they are dropped.
+  const manualFor = useMemo(
+    () => manualScopeFor({ mapId, matchType }, manualIndex),
+    [mapId, matchType, manualIndex],
+  )
+
   /** Builds the full stat line for one player within the current filters. */
   const statsFor = (playerId) => {
     const player = players.find((p) => p.id === playerId)
     if (!player) return null
     const teamFinishes = scope.reduce((a, m) => a + (m.team_finishes || 0), 0)
     const derived = derivePlayerStats(
-      aggregateForPlayer(playerId, scope, statsIndex),
+      aggregateForPlayer(playerId, scope, statsIndex, manualFor ? manualFor(playerId) : null),
       teamFinishes,
     )
     return {
@@ -79,8 +87,10 @@ export default function Compare() {
     }
   }
 
-  const left = useMemo(() => statsFor(leftId), [leftId, scope, players, statsIndex, settings])
-  const right = useMemo(() => statsFor(rightId), [rightId, scope, players, statsIndex, settings])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const left = useMemo(() => statsFor(leftId), [leftId, scope, players, statsIndex, manualFor, settings])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const right = useMemo(() => statsFor(rightId), [rightId, scope, players, statsIndex, manualFor, settings])
 
   /** Radar data with one key per player, overlaid on the same axes. */
   const radarData = useMemo(() => {

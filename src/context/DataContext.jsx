@@ -21,7 +21,7 @@ import {
 import toast from 'react-hot-toast'
 import { supabase, readableError } from '@/lib/supabase'
 import { fetchAll } from '@/lib/api'
-import { indexStats } from '@/lib/stats'
+import { indexStats, indexManual } from '@/lib/stats'
 import { DEFAULT_SETTINGS } from '@/lib/constants'
 import { useAuth } from './AuthContext'
 
@@ -44,6 +44,8 @@ const EMPTY = {
   announcements: [],
   activity: [],
   profiles: [],
+  manualStats: [],
+  manualStatsReady: false,
 }
 
 /** Writes the accent colour into the page so every Tailwind class follows it. */
@@ -142,6 +144,12 @@ export function DataProvider({ children }) {
 
       /** Pre-grouped stat rows — see src/lib/stats.js */
       statsIndex: indexStats(data.matchStats),
+
+      /**
+       * Carried-over totals, grouped for instant lookup.
+       * `manualIndex.forPlayer(id)` / `manualIndex.forMap(id, mapId)`
+       */
+      manualIndex: indexManual(data.manualStats),
 
       /* Lookup helpers, used constantly by tables and cards */
       mapById,

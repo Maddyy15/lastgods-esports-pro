@@ -28,7 +28,7 @@ import PlayerForm from '@/components/players/PlayerForm'
 
 export default function Roster() {
   const { can, myPlayerId, isAdmin } = useAuth()
-  const { players, matches, statsIndex, settings, reload } = useData()
+  const { players, matches, statsIndex, manualIndex, settings, reload } = useData()
   const confirm = useConfirm()
 
   const [editing, setEditing] = useState(null) // player object or 'new'
@@ -43,7 +43,13 @@ export default function Roster() {
   const cards = useMemo(
     () =>
       players.map((player) => {
-        const totals = aggregateForPlayer(player.id, matches, statsIndex)
+        // Roster cards are all-time, so carried-over totals count here.
+        const totals = aggregateForPlayer(
+          player.id,
+          matches,
+          statsIndex,
+          manualIndex.forPlayer(player.id),
+        )
         const derived = derivePlayerStats(totals, teamFinishes)
         return {
           player,
@@ -52,7 +58,7 @@ export default function Roster() {
           form: playerFormStrip(player.id, matches, statsIndex, 5),
         }
       }),
-    [players, matches, statsIndex, teamFinishes, settings.rating_weights],
+    [players, matches, statsIndex, manualIndex, teamFinishes, settings.rating_weights],
   )
 
   const visible = filter === 'all' ? cards : cards.filter((c) => c.player.status === filter)

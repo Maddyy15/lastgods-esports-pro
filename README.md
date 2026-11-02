@@ -14,6 +14,7 @@ storage, realtime) and **Recharts**. Hosted free on **Vercel**.
 2. [Set up the database (Supabase)](#2-set-up-the-database-supabase)
 3. [Run the site on your laptop](#3-run-the-site-on-your-laptop)
 4. [First steps inside the app](#4-first-steps-inside-the-app)
+   — including [carrying over old stats](#45-carry-over-stats-from-before-you-started-logging)
 5. [Add your teammates](#5-add-your-teammates)
 6. [Put it online (Vercel)](#6-put-it-online-vercel)
 7. [Day-to-day use](#7-day-to-day-use)
@@ -59,7 +60,7 @@ completely and reopen it.
    - **Region:** pick the one closest to you (for India: `South Asia (Mumbai)`)
 4. Click **Create new project** and wait about two minutes.
 
-### 2.2 Run the three SQL files
+### 2.2 Run the four SQL files
 
 This creates every table, every security rule, and some sample data to test with.
 
@@ -70,8 +71,15 @@ This creates every table, every security rule, and some sample data to test with
    You should see *Success. No rows returned.*
 4. Click **New query** again and repeat with `supabase/02_rls.sql`.
 5. Click **New query** again and repeat with `supabase/03_seed.sql`.
+6. Click **New query** again and repeat with `supabase/04_manual_totals.sql`.
 
-> **Run them in order — 01, then 02, then 03.** Each one depends on the last.
+> **Run them in order — 01, then 02, then 03, then 04.** Each one depends on
+> the last.
+
+`04_manual_totals.sql` adds the table that stores *carried-over* stats — the
+kills, damage and wins your players earned before you started logging matches
+here. It only adds a new table, so it is safe to run on a database that is
+already full of real matches, and safe to run twice. See §4.5.
 
 **If step 3 shows an error about `storage.objects`:** the tables were still
 created. Skip to §2.5 to create the three storage buckets by hand instead.
@@ -211,6 +219,45 @@ sensitivity. Add everyone, including substitutes.
 
 Everything else in the site — dashboard totals, map breakdowns, drop-spot
 analysis, leaderboard, records — updates from that one save.
+
+### 4.5 Carry over stats from before you started logging
+
+Your team did not begin the day you installed this. **Roster → edit a player**
+opens a modal with three tabs:
+
+| Tab | What it holds |
+|---|---|
+| **Profile** | IGN, real name, primary + secondary role, status, device, FPS, gyro, sensitivity, weapons, join date, character ID, photo |
+| **Overall Stats** | Carried-over matches, kills, knocks, assists, damage, headshots, revives, wins, top 10s, MVPs, avg survival, throwable damage, vehicle kills, longest kill |
+| **Map Stats** | The same idea per map — matches, kills, knocks, damage, headshots, wins, MVPs |
+
+Type what the player already had. Every field shows the sum live as you type:
+
+```
+20 manual  +  35 logged  =  55
+```
+
+Those numbers are never recalculated or overwritten by the app. Logged matches
+are simply added on top, and the result flows into the Roster cards, the player
+profile, the map-wise breakdown, the leaderboard, Compare, the milestones on
+Records, and the Player Rating.
+
+**Three things worth knowing:**
+
+- **Only Owner, Admin, Coach and Analyst see the stat tabs.** A Player editing
+  their own card gets the Profile tab only. That is enforced by the database,
+  not just hidden in the interface — see the policies in `04_manual_totals.sql`.
+- **Carry-over stats only appear on all-time views.** Filter the leaderboard to
+  "last 7 days" or to one tournament and they drop out, because stats from last
+  season are not part of this week. Filtering by **map** keeps them, and swaps
+  in that player's carried-over row for that map.
+- **Average placement and kill-contribution % stay on logged matches only.** A
+  carried-over total has no placements to average, so including it would drag
+  those two numbers towards zero.
+
+**Team-wide carry-over** — the whole squad's past totals on the Dashboard — is a
+separate setting: **Settings → Totals**, where you can switch off
+auto-calculation and type the team's own numbers.
 
 ---
 
@@ -400,7 +447,8 @@ lastgods-esports-pro/
 ├── supabase/
 │   ├── 01_schema.sql        ← tables, triggers, auto-calculation
 │   ├── 02_rls.sql           ← who can do what (security)
-│   └── 03_seed.sql          ← sample data for testing
+│   ├── 03_seed.sql          ← sample data for testing
+│   └── 04_manual_totals.sql ← carried-over stats from before logging
 └── src/
     ├── main.jsx             ← starts the app
     ├── App.jsx              ← every route/page address

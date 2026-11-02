@@ -30,10 +30,15 @@ export function Button({
   loading = false,
   disabled,
   children,
+  // A <button> with no type defaults to "submit", so one placed inside a form
+  // submits it when clicked. Defaulting to "button" means only the buttons
+  // that actually say type="submit" can send a form.
+  type = 'button',
   ...props
 }) {
   return (
     <button
+      type={type}
       disabled={disabled || loading}
       className={cx(
         'inline-flex items-center rounded-lg font-semibold transition-all focus-accent',
@@ -235,6 +240,9 @@ export function Tabs({ tabs, value, onChange, className }) {
       {tabs.map((tab) => (
         <button
           key={tab.value}
+          // Without this, a tab strip inside a form submits the form the
+          // moment you switch tabs — see the note on Button above.
+          type="button"
           onClick={() => onChange(tab.value)}
           className={cx(
             'shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus-accent',

@@ -77,6 +77,7 @@ export function Modal({
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
           </div>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close"
             className="rounded-lg p-1.5 text-muted transition-colors hover:bg-card-hi hover:text-fg focus-accent"

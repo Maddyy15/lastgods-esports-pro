@@ -53,7 +53,8 @@ import PlayerForm from '@/components/players/PlayerForm'
 export default function PlayerProfile() {
   const { playerId } = useParams()
   const { can, myPlayerId } = useAuth()
-  const { players, matches, maps, statsIndex, settings, mapName, spotName } = useData()
+  const { players, matches, maps, statsIndex, manualIndex, settings, mapName, spotName } =
+    useData()
 
   const [editing, setEditing] = useState(false)
   const [mapFilter, setMapFilter] = useState('all')
@@ -65,11 +66,14 @@ export default function PlayerProfile() {
     if (!player) return null
 
     const teamFinishes = matches.reduce((a, m) => a + (m.team_finishes || 0), 0)
-    const totals = aggregateForPlayer(player.id, matches, statsIndex)
+    // The headline numbers are all-time, so carried-over totals count.
+    const manual = manualIndex.forPlayer(player.id)
+    const totals = aggregateForPlayer(player.id, matches, statsIndex, manual)
     const derived = derivePlayerStats(totals, teamFinishes)
 
     // Per-map rows, then the best and weakest map by K/D
-    const byMap = playerByMap(player.id, matches, statsIndex, maps)
+    // Each map row picks up that player's carry-over for that map.
+    const byMap = playerByMap(player.id, matches, statsIndex, maps, manualIndex)
     const ranked = [...byMap].filter((r) => r.matches >= 2).sort((a, b) => b.kd - a.kd)
 
     // Scrims vs Tournaments vs Practice vs Ranked
@@ -106,7 +110,7 @@ export default function PlayerProfile() {
         longest: bestBy('longest_kill'),
       },
     }
-  }, [player, matches, maps, statsIndex, settings.rating_weights])
+  }, [player, matches, maps, statsIndex, manualIndex, settings.rating_weights])
 
   /* ------------------------------------------- this player's match history */
   const history = useMemo(() => {
@@ -309,7 +313,18 @@ export default function PlayerProfile() {
       ) : (
         <>
           {/* -------------------------------------------- overall stats --- */}
-          <h2 className="label mb-2">Overall</h2>
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h2 className="label">Overall</h2>
+            {/* Say so plainly when part of these numbers was typed in rather
+                than logged, so nobody hunts for matches that do not exist. */}
+            {derived.manualMatches > 0 && (
+              <p className="text-[11px] text-faint">
+                Includes <span className="text-accent">{num(derived.manualMatches)}</span>{" "}
+                carried-over {derived.manualMatches === 1 ? "match" : "matches"} from before
+                match logging started, plus {num(derived.loggedMatches)} logged.
+              </p>
+            )}
+          </div>
           <StatGrid cols={6} className="mb-4">
             <StatBox label="Matches" value={derived.matches} />
             <StatBox label="Finishes" value={derived.finishes} color="var(--color-accent)" />

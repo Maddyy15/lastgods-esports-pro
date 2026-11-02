@@ -23,6 +23,13 @@ export function emptyTotals() {
   return {
     matches: 0,
     finishes: 0,
+    // "logged" = came from a real match row, as opposed to a carried-over
+    // manual total. A few averages (placement, utility, kill contribution)
+    // can only be worked out from logged matches, because the manual totals
+    // have no placement or utility to average. See derivePlayerStats.
+    loggedMatches: 0,
+    loggedFinishes: 0,
+    manualMatches: 0,
     knocks: 0,
     assists: 0,
     damage: 0,
@@ -48,6 +55,7 @@ export function emptyTotals() {
 /** Adds one match_player_stats row into a totals object. */
 function addStatRow(totals, row) {
   totals.finishes += row.finishes || 0
+  totals.loggedFinishes += row.finishes || 0
   totals.knocks += row.knocks || 0
   totals.assists += row.assists || 0
   totals.damage += row.damage || 0
@@ -70,6 +78,145 @@ function addMatchResult(totals, match) {
   if (match.placement === 1) totals.wwcd += 1
   if (match.placement <= 5) totals.top5 += 1
   if (match.placement <= 10) totals.top10 += 1
+}
+
+/* ---------------------------------------------------------------------------
+ * CARRIED-OVER (MANUAL) TOTALS
+ * ---------------------------------------------------------------------------
+ * Stats from before the team started logging matches here. They live in the
+ * `player_manual_stats` table (see supabase/04_manual_totals.sql) and are
+ * simply added on top of the logged numbers:
+ *
+ *      Manual 20 kills  +  Logged 35 kills  =  Total 55 kills
+ *
+ * A row with map_id = null is the player's overall carry-over. A row with a
+ * map_id is that player's carry-over on that one map.
+ * ------------------------------------------------------------------------- */
+
+/** The fields an admin can type on the "Overall Stats" tab. */
+export const MANUAL_OVERALL_FIELDS = [
+  { key: 'matches', label: 'Matches' },
+  { key: 'finishes', label: 'Finishes (kills)' },
+  { key: 'knocks', label: 'Knocks' },
+  { key: 'assists', label: 'Assists' },
+  { key: 'damage', label: 'Damage' },
+  { key: 'headshots', label: 'Headshots' },
+  { key: 'revives', label: 'Revives' },
+  { key: 'wwcd', label: 'Wins (WWCD)' },
+  { key: 'top10', label: 'Top 10s' },
+  { key: 'mvps', label: 'MVPs' },
+  { key: 'throwable_damage', label: 'Throwable damage' },
+  { key: 'vehicle_kills', label: 'Vehicle kills' },
+  { key: 'longest_kill', label: 'Longest kill (m)', decimal: true, record: true },
+]
+
+/** The smaller set offered per map on the "Map Stats" tab. */
+export const MANUAL_MAP_FIELDS = [
+  { key: 'matches', label: 'Matches' },
+  { key: 'finishes', label: 'Finishes (kills)' },
+  { key: 'knocks', label: 'Knocks' },
+  { key: 'damage', label: 'Damage' },
+  { key: 'headshots', label: 'Headshots' },
+  { key: 'wwcd', label: 'Wins (WWCD)' },
+  { key: 'mvps', label: 'MVPs' },
+]
+
+/** A blank carry-over row, used as the starting point for a new one. */
+export function emptyManual(playerId = null, mapId = null) {
+  return {
+    player_id: playerId,
+    map_id: mapId,
+    matches: 0,
+    finishes: 0,
+    knocks: 0,
+    assists: 0,
+    damage: 0,
+    headshots: 0,
+    revives: 0,
+    wwcd: 0,
+    top10: 0,
+    mvps: 0,
+    throwable_damage: 0,
+    vehicle_kills: 0,
+    avg_survival_seconds: 0,
+    longest_kill: 0,
+  }
+}
+
+/** True when a carry-over row is all zeros and therefore not worth storing. */
+export function isBlankManual(row) {
+  if (!row) return true
+  return Object.entries(row).every(
+    ([key, value]) =>
+      key === 'player_id' ||
+      key === 'map_id' ||
+      key === 'id' ||
+      key === 'note' ||
+      !Number(value),
+  )
+}
+
+/**
+ * Groups the flat `player_manual_stats` array into fast lookups.
+ * Returns `{ overall, byMap, forPlayer, forMap }`.
+ */
+export function indexManual(rows = []) {
+  const overall = new Map()
+  const byMap = new Map()
+
+  for (const row of rows) {
+    if (row.map_id) byMap.set(`${row.player_id}:${row.map_id}`, row)
+    else overall.set(row.player_id, row)
+  }
+
+  return {
+    overall,
+    byMap,
+    /** That player's overall carry-over row, or null. */
+    forPlayer: (playerId) => overall.get(playerId) || null,
+    /** That player's carry-over row for one map, or null. */
+    forMap: (playerId, mapId) => byMap.get(`${playerId}:${mapId}`) || null,
+    /** Every map row belonging to one player, keyed by map id. */
+    mapsForPlayer: (playerId) => {
+      const out = new Map()
+      for (const row of rows) {
+        if (row.player_id === playerId && row.map_id) out.set(row.map_id, row)
+      }
+      return out
+    },
+  }
+}
+
+/**
+ * Adds a carry-over row into a totals object.
+ *
+ * Two fields behave differently from the rest:
+ *   • avg_survival_seconds is an AVERAGE, so it is multiplied back out into a
+ *     total before being added (avg x matches).
+ *   • longest_kill is a RECORD, so the higher of the two wins instead of
+ *     the two being added together.
+ */
+export function mergeManual(totals, manual) {
+  if (!manual) return totals
+  const n = Number(manual.matches) || 0
+
+  totals.matches += n
+  totals.manualMatches += n
+  totals.finishes += Number(manual.finishes) || 0
+  totals.knocks += Number(manual.knocks) || 0
+  totals.assists += Number(manual.assists) || 0
+  totals.damage += Number(manual.damage) || 0
+  totals.headshots += Number(manual.headshots) || 0
+  totals.revives += Number(manual.revives) || 0
+  totals.throwable_damage += Number(manual.throwable_damage) || 0
+  totals.vehicle_kills += Number(manual.vehicle_kills) || 0
+  totals.mvps += Number(manual.mvps) || 0
+  totals.wwcd += Number(manual.wwcd) || 0
+  totals.top10 += Number(manual.top10) || 0
+  totals.survival_seconds += (Number(manual.avg_survival_seconds) || 0) * n
+  totals.longest_kill = Math.max(totals.longest_kill, Number(manual.longest_kill) || 0)
+
+  return totals
 }
 
 /* ---------------------------------------------------------------------------
@@ -150,6 +297,40 @@ export function filterMatches(matches = [], f = {}, statsIndex = null) {
   return out
 }
 
+/**
+ * Decides whether carried-over totals belong in a filtered view, and which
+ * ones.
+ *
+ * Carry-over stats describe a player's whole past, so they only make sense on
+ * an all-time view. The moment a date range, tournament, match type, stage,
+ * drop spot or search narrows the list, they are left out — otherwise kills
+ * from last season would turn up inside this week's leaderboard.
+ *
+ * Filtering by MAP is the one exception: it swaps the overall carry-over for
+ * that player's carry-over on that map.
+ *
+ * @returns `(playerId) => manualRow | null`, or null when none apply.
+ */
+export function manualScopeFor(filters = {}, manualIndex = null) {
+  if (!manualIndex) return null
+
+  const narrowed =
+    ['matchType', 'tournamentId', 'dropSpotId', 'stage', 'placement'].some(
+      (key) => filters[key] && filters[key] !== 'all',
+    ) ||
+    Boolean(filters.days) ||
+    Boolean(filters.from) ||
+    Boolean(filters.to) ||
+    Boolean(filters.search)
+
+  if (narrowed) return null
+
+  const mapId = filters.mapId && filters.mapId !== 'all' ? filters.mapId : null
+  return mapId
+    ? (playerId) => manualIndex.forMap(playerId, mapId)
+    : (playerId) => manualIndex.forPlayer(playerId)
+}
+
 /* ---------------------------------------------------------------------------
  * TEAM AGGREGATE
  * ------------------------------------------------------------------------- */
@@ -185,10 +366,15 @@ export function deriveTeam(totals) {
 /**
  * Raw sums for one player across a given list of matches.
  * Matches the player did not play in are skipped automatically.
+ *
+ * @param manual  optional carried-over totals row to add on top. Pass this
+ *                only when the view covers the player's whole history — a
+ *                leaderboard filtered to "last 7 days" or to one tournament
+ *                must NOT include stats earned before the logging started.
  */
-export function aggregateForPlayer(playerId, matches = [], statsIndex) {
+export function aggregateForPlayer(playerId, matches = [], statsIndex, manual = null) {
   const t = emptyTotals()
-  if (!statsIndex) return t
+  if (!statsIndex) return mergeManual(t, manual)
 
   for (const m of matches) {
     const rows = statsIndex.byMatch.get(m.id)
@@ -196,10 +382,12 @@ export function aggregateForPlayer(playerId, matches = [], statsIndex) {
     const row = rows.find((r) => r.player_id === playerId)
     if (!row) continue
     t.matches += 1
+    t.loggedMatches += 1
     addStatRow(t, row)
     addMatchResult(t, m)
   }
-  return t
+
+  return mergeManual(t, manual)
 }
 
 /**
@@ -209,6 +397,12 @@ export function aggregateForPlayer(playerId, matches = [], statsIndex) {
  */
 export function derivePlayerStats(totals, teamFinishes = 0) {
   const n = totals.matches || 0
+  // Placement, utility and kill-contribution exist only on logged matches —
+  // a carried-over total has no placement to average and no team kill count
+  // to be a share of. Averaging those over the merged match count would drag
+  // them towards zero, so they stay on the logged matches alone.
+  const logged = totals.loggedMatches ?? n
+  const loggedFinishes = totals.loggedFinishes ?? totals.finishes
   return {
     ...totals,
     kd: safeDiv(totals.finishes, n, 2), // finishes per match played
@@ -221,9 +415,9 @@ export function derivePlayerStats(totals, teamFinishes = 0) {
     knockConversion: totals.knocks ? (totals.finishes / totals.knocks) * 100 : 0,
     avgSurvival: safeDiv(totals.survival_seconds, n, 0),
     avgRevives: safeDiv(totals.revives, n, 2),
-    avgUtility: safeDiv(totals.utility_used, n, 1),
-    contributionPct: teamFinishes ? (totals.finishes / teamFinishes) * 100 : 0,
-    avgPlacement: safeDiv(totals.placementSum, n, 2),
+    avgUtility: safeDiv(totals.utility_used, logged, 1),
+    contributionPct: teamFinishes ? (loggedFinishes / teamFinishes) * 100 : 0,
+    avgPlacement: safeDiv(totals.placementSum, logged, 2),
     winRate: n ? (totals.wwcd / n) * 100 : 0,
   }
 }
@@ -286,11 +480,12 @@ export function radarProfile(derived) {
  * and that player's best match on the map. This powers the map-wise table on
  * the player profile.
  */
-export function playerByMap(playerId, matches, statsIndex, maps = []) {
+export function playerByMap(playerId, matches, statsIndex, maps = [], manualIndex = null) {
   return maps
     .map((map) => {
       const mapMatches = matches.filter((m) => m.map_id === map.id)
-      const totals = aggregateForPlayer(playerId, mapMatches, statsIndex)
+      const manual = manualIndex ? manualIndex.forMap(playerId, map.id) : null
+      const totals = aggregateForPlayer(playerId, mapMatches, statsIndex, manual)
       const teamFinishes = mapMatches.reduce((a, m) => a + (m.team_finishes || 0), 0)
       const derived = derivePlayerStats(totals, teamFinishes)
 
@@ -354,13 +549,21 @@ export function teamByDropSpot(matches, dropSpots = [], maps = []) {
 /* ---------------------------------------------------------------------------
  * LEADERBOARD
  * ------------------------------------------------------------------------- */
-/** Full derived stat line for every player, ready to be sorted. */
-export function buildLeaderboard(players, matches, statsIndex, weights) {
+/**
+ * Full derived stat line for every player, ready to be sorted.
+ *
+ * @param manualFor  optional `(playerId) => manualRow | null`. Supply it only
+ *                   when the leaderboard covers the whole history (or a whole
+ *                   map); leave it out when a date range, tournament or match
+ *                   type is filtering the list.
+ */
+export function buildLeaderboard(players, matches, statsIndex, weights, manualFor = null) {
   const teamFinishes = matches.reduce((a, m) => a + (m.team_finishes || 0), 0)
 
   return players
     .map((player) => {
-      const totals = aggregateForPlayer(player.id, matches, statsIndex)
+      const manual = manualFor ? manualFor(player.id) : null
+      const totals = aggregateForPlayer(player.id, matches, statsIndex, manual)
       const derived = derivePlayerStats(totals, teamFinishes)
       return { player, ...derived, rating: playerRating(derived, weights) }
     })

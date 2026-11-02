@@ -8,7 +8,12 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ListOrdered, Trophy } from 'lucide-react'
 import { useData } from '@/context/DataContext'
-import { buildLeaderboard, filterMatches, LEADERBOARD_METRICS } from '@/lib/stats'
+import {
+  buildLeaderboard,
+  filterMatches,
+  manualScopeFor,
+  LEADERBOARD_METRICS,
+} from '@/lib/stats'
 import { num, pct, duration } from '@/lib/format'
 import { MATCH_TYPE_OPTIONS, DATE_RANGES } from '@/lib/constants'
 
@@ -34,7 +39,8 @@ function formatMetric(value, format) {
 }
 
 export default function Leaderboard() {
-  const { players, matches, maps, tournaments, statsIndex, settings } = useData()
+  const { players, matches, maps, tournaments, statsIndex, manualIndex, settings } =
+    useData()
 
   const [metric, setMetric] = useState('finishes')
   const [filters, setFilters] = useState({
@@ -52,9 +58,19 @@ export default function Leaderboard() {
   )
 
   const board = useMemo(() => {
-    const rows = buildLeaderboard(players, filtered, statsIndex, settings.rating_weights)
+    // Carried-over totals belong on an all-time board, and on a board
+    // filtered only by map. Any other filter narrows the window, so they are
+    // left out — see manualScopeFor in src/lib/stats.js.
+    const manualFor = manualScopeFor(filters, manualIndex)
+    const rows = buildLeaderboard(
+      players,
+      filtered,
+      statsIndex,
+      settings.rating_weights,
+      manualFor,
+    )
     return rows.sort((a, b) => (b[metric] || 0) - (a[metric] || 0))
-  }, [players, filtered, statsIndex, settings.rating_weights, metric])
+  }, [players, filtered, statsIndex, manualIndex, filters, settings.rating_weights, metric])
 
   const podium = board.slice(0, 3)
 

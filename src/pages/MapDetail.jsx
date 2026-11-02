@@ -27,7 +27,8 @@ import { PlacementTrend, BarCompare, SERIES } from '@/components/ui/Charts'
 
 export default function MapDetail() {
   const { mapId } = useParams()
-  const { maps, matches, players, dropSpots, statsIndex, settings, spotName } = useData()
+  const { maps, matches, players, dropSpots, statsIndex, manualIndex, settings, spotName } =
+    useData()
 
   const map = maps.find((m) => m.id === mapId)
 
@@ -39,8 +40,12 @@ export default function MapDetail() {
   const totals = useMemo(() => deriveTeam(aggregateTeam(mapMatches)), [mapMatches])
 
   const leaderboard = useMemo(
-    () => buildLeaderboard(players, mapMatches, statsIndex, settings.rating_weights),
-    [players, mapMatches, statsIndex, settings.rating_weights],
+    () =>
+      // Map-specific carry-over totals join this board.
+      buildLeaderboard(players, mapMatches, statsIndex, settings.rating_weights, (id) =>
+        manualIndex.forMap(id, mapId),
+      ),
+    [players, mapMatches, statsIndex, manualIndex, mapId, settings.rating_weights],
   )
 
   const spots = useMemo(

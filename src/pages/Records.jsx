@@ -43,7 +43,7 @@ function RecordCard({ icon: Icon, label, value, suffix = '', holder, match, colo
 }
 
 export default function Records() {
-  const { matches, matchStats, players, statsIndex, mapName } = useData()
+  const { matches, matchStats, players, statsIndex, manualIndex, mapName } = useData()
 
   const records = useMemo(
     () => buildRecords(matches, matchStats, players),
@@ -55,8 +55,11 @@ export default function Records() {
     const teamFinishes = matches.reduce((a, m) => a + (m.team_finishes || 0), 0)
     return players
       .map((player) => {
+        // Milestones are lifetime counters, so carry-over totals count
+        // towards them. (The single-match records above cannot use them —
+        // a carried-over total is not one match.)
         const derived = derivePlayerStats(
-          aggregateForPlayer(player.id, matches, statsIndex),
+          aggregateForPlayer(player.id, matches, statsIndex, manualIndex.forPlayer(player.id)),
           teamFinishes,
         )
         const achieved = []
