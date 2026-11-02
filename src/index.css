@@ -1,0 +1,147 @@
+/* ===========================================================================
+   LastGods Esports — global theme
+   Tailwind v4 is configured here in CSS (there is no tailwind.config.js in v4).
+   Everything inside @theme becomes a real CSS variable AND a Tailwind utility,
+   e.g. --color-accent  ->  bg-accent / text-accent / border-accent
+   =========================================================================== */
+@import 'tailwindcss';
+
+@theme {
+  /* --- Surfaces (near-black premium esports look) --- */
+  --color-ink: #07080a; /* page background          */
+  --color-surface: #0d0f13; /* sidebar / topbar     */
+  --color-card: #13161c; /* cards                   */
+  --color-card-hi: #191d25; /* hovered / raised card */
+  --color-line: #232834; /* borders                 */
+
+  /* --- Text --- */
+  --color-fg: #eef1f6; /* main text        */
+  --color-muted: #8d95a6; /* secondary text */
+  --color-faint: #5c6476; /* labels         */
+
+  /* --- Accent (changed live from Settings; see ThemeContext) --- */
+  --color-accent: #f59e0b;
+  --color-accent-soft: #f59e0b22;
+
+  /* --- Status colours --- */
+  --color-win: #22c55e;
+  --color-good: #38bdf8;
+  --color-warn: #eab308;
+  --color-bad: #ef4444;
+
+  /* --- In-game role colours (IGL, Assaulter, Support, Sniper, Filler) --- */
+  --color-role-igl: #a855f7;
+  --color-role-assaulter: #ef4444;
+  --color-role-support: #22c55e;
+  --color-role-sniper: #38bdf8;
+  --color-role-filler: #f59e0b;
+
+  /* --- Fonts --- */
+  --font-display: 'Teko', system-ui, sans-serif;
+  --font-head: 'Rajdhani', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* --- Animations --- */
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.35s ease-out both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position: 600px 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Base element styling
+   -------------------------------------------------------------------------- */
+@layer base {
+  * { border-color: var(--color-line); }
+
+  html { color-scheme: dark; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    /* soft accent glows top-left and bottom-right of the page */
+    background-image:
+      radial-gradient(60rem 40rem at 5% -10%, var(--color-accent-soft), transparent 60%),
+      radial-gradient(50rem 40rem at 105% 110%, #38bdf814, transparent 60%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3, h4 { font-family: var(--font-head); letter-spacing: 0.01em; }
+
+  /* Hide number-input spinners — stat forms use plain numeric typing */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type='number'] { -moz-appearance: textfield; }
+
+  /* Thin dark scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink); }
+  ::-webkit-scrollbar-thumb { background: #262c38; border-radius: 99px; border: 2px solid var(--color-ink); }
+  ::-webkit-scrollbar-thumb:hover { background: #333a49; }
+}
+
+/* --------------------------------------------------------------------------
+   Reusable component classes
+   -------------------------------------------------------------------------- */
+@layer components {
+  /* Big numbers (stat values, scores) */
+  .num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Small uppercase label above/below a stat */
+  .label {
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+  }
+
+  .card-base {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+  }
+
+  /* Focus ring used by every input/button */
+  .focus-accent:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Shimmering placeholder used by <Skeleton /> */
+  .skeleton {
+    background-image: linear-gradient(90deg, #171b22 0%, #222733 40%, #171b22 80%);
+    background-size: 600px 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 0.5rem;
+  }
+}
+
+/* Respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
