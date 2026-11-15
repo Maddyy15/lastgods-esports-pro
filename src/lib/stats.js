@@ -630,12 +630,15 @@ export function playerTrend(playerId, matches, statsIndex, limit = 20) {
 
 /** How often we finish in each bracket — the placement distribution chart. */
 export function placementDistribution(matches) {
+  // These brackets are ORDERED (best to worst), so they take one gold hue
+  // from bright to dark rather than five unrelated colours — the ranking then
+  // reads even in greyscale. Same values as RAMP in components/ui/Charts.jsx.
   const buckets = [
-    { label: 'WWCD', test: (p) => p === 1, color: '#f59e0b' },
-    { label: '2-3', test: (p) => p >= 2 && p <= 3, color: '#22c55e' },
-    { label: '4-5', test: (p) => p >= 4 && p <= 5, color: '#38bdf8' },
-    { label: '6-10', test: (p) => p >= 6 && p <= 10, color: '#eab308' },
-    { label: '11+', test: (p) => p > 10, color: '#ef4444' },
+    { label: 'WWCD', test: (p) => p === 1, color: '#f1cf86' },
+    { label: '2-3', test: (p) => p >= 2 && p <= 3, color: '#dcb76a' },
+    { label: '4-5', test: (p) => p >= 4 && p <= 5, color: '#c49a48' },
+    { label: '6-10', test: (p) => p >= 6 && p <= 10, color: '#a87f32' },
+    { label: '11+', test: (p) => p > 10, color: '#8a6727' },
   ]
   return buckets.map((b) => ({
     name: b.label,

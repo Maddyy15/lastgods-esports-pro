@@ -315,7 +315,7 @@ export default function Notes() {
                           </Badge>
                         ))}
                         {note.is_pinned && (
-                          <Badge color="#f59e0b" size="sm">
+                          <Badge color="#d4aa5a" size="sm">
                             Pinned
                           </Badge>
                         )}

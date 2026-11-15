@@ -18,7 +18,10 @@ import { Modal, useConfirm } from '@/components/ui/Modal'
 import { Input, Select, Textarea, FormGrid, FormSection } from '@/components/ui/Form'
 import { MiniStat } from '@/components/ui/StatBox'
 
-const THREAT_COLORS = ['#8d95a6', '#38bdf8', '#22c55e', '#eab308', '#f97316', '#ef4444']
+// Threat is an ORDERED scale, so the colours escalate along one warm run
+// (quiet grey -> silver -> gold -> ember -> red) instead of jumping between
+// unrelated hues. The ranking then reads without consulting a key.
+const THREAT_COLORS = ['#70707c', '#a3a3ac', '#d4aa5a', '#d98a4a', '#e06a5c', '#e04b3c']
 
 /* ---------------------------------------------------------------------------
  * ADD / EDIT OPPONENT

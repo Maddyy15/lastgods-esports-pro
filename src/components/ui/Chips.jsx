@@ -16,28 +16,39 @@ import {
 import { Badge } from './Primitives'
 import { cx, ordinal, dateShort } from '@/lib/format'
 
-/** IGL / Assaulter / Support / Sniper / Filler */
-export function RoleBadge({ role, size = 'md', showFull = false }) {
+/**
+ * IGL / Assaulter / Support / Sniper / Filler.
+ *
+ * `tone` decides the colour:
+ *   'role'   — the role's own colour, used where roles are being compared
+ *   'gold'   — the brand gold, used for a player's PRIMARY role
+ *   'silver' — quiet, used for a secondary role
+ * The word itself always says which role it is, so colour is never the only
+ * thing carrying the meaning.
+ */
+export function RoleBadge({ role, size = 'md', showFull = false, tone = 'role' }) {
   if (!role) return null
   const meta = GAME_ROLES[role]
   if (!meta) return null
+  const color =
+    tone === 'gold'
+      ? 'var(--color-accent)'
+      : tone === 'silver'
+        ? 'var(--color-silver)'
+        : meta.color
   return (
-    <Badge color={meta.color} size={size}>
+    <Badge color={color} size={size}>
       {showFull ? meta.full : meta.label}
     </Badge>
   )
 }
 
-/** Both role badges together, the secondary one dimmed. */
+/** Both role badges together: primary in gold, secondary quiet in silver. */
 export function RoleBadges({ primary, secondary, size = 'md' }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1">
-      <RoleBadge role={primary} size={size} />
-      {secondary && (
-        <span className="opacity-60">
-          <RoleBadge role={secondary} size={size} />
-        </span>
-      )}
+      <RoleBadge role={primary} size={size} tone="gold" />
+      {secondary && <RoleBadge role={secondary} size={size} tone="silver" />}
     </span>
   )
 }
@@ -106,27 +117,30 @@ export function AttendanceBadge({ status, size = 'md' }) {
  * PLACEMENT CHIP — one square showing where we finished
  * ------------------------------------------------------------------------- */
 export function PlacementChip({ placement, size = 'md', title }) {
+  // Medal tiers: #1 gold, #2-3 silver, #4-10 bronze, 11+ grey.
+  // See placementColor() in src/lib/constants.js — one definition, so a
+  // result looks identical in the form strip, the tables and the detail page.
   const color = placementColor(placement)
   const sizes = {
-    sm: 'h-6 w-6 text-[11px]',
-    md: 'h-8 w-8 text-sm',
-    lg: 'h-10 w-10 text-base',
+    sm: 'h-6 min-w-6 px-1.5 text-[11px]',
+    md: 'h-7 min-w-8 px-2 text-[13px]',
+    lg: 'h-9 min-w-10 px-2.5 text-base',
   }
   return (
     <span
       title={title || `Finished ${ordinal(placement)}`}
       className={cx(
-        'inline-flex items-center justify-center rounded-md border font-head font-bold tabular-nums',
+        'inline-flex items-center justify-center gap-0.5 rounded-full border font-head font-bold tabular-nums',
         sizes[size],
       )}
       style={{
         color,
-        borderColor: `${color}66`,
-        backgroundColor: `${color}1f`,
-        boxShadow: placement === 1 ? `0 0 14px -4px ${color}` : undefined,
+        borderColor: `${color}55`,
+        backgroundColor: `${color}1a`,
       }}
     >
-      {placement === 1 ? '🏆' : placement}
+      <span className="opacity-60">#</span>
+      {placement}
     </span>
   )
 }
@@ -165,9 +179,9 @@ export function FormStrip({ items = [], size = 'md', linkMatches = true }) {
  * RANK MEDAL — gold / silver / bronze for the top three on the leaderboard
  * ------------------------------------------------------------------------- */
 const MEDALS = {
-  1: { color: '#f5c518', label: '1' },
-  2: { color: '#c7ccd6', label: '2' },
-  3: { color: '#cd7f32', label: '3' },
+  1: { color: '#d4aa5a', label: '1' }, // gold
+  2: { color: '#c7cad1', label: '2' }, // silver
+  3: { color: '#b07d4a', label: '3' }, // bronze
 }
 
 export function RankMedal({ rank, size = 'md' }) {
@@ -197,8 +211,7 @@ export function RankMedal({ rank, size = 'md' }) {
       style={{
         color: medal.color,
         borderColor: medal.color,
-        backgroundColor: `${medal.color}1f`,
-        boxShadow: `0 0 16px -4px ${medal.color}`,
+        backgroundColor: `${medal.color}1a`,
       }}
     >
       {medal.label}

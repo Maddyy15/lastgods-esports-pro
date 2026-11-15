@@ -279,7 +279,7 @@ export default function TournamentDetail() {
         <span className={row.is_us ? 'font-semibold text-accent' : 'text-fg'}>
           {row.team_name}
           {row.is_us && (
-            <Badge color="#f59e0b" size="sm" className="ml-2">
+            <Badge color="#d4aa5a" size="sm" className="ml-2">
               Us
             </Badge>
           )}
@@ -348,7 +348,7 @@ export default function TournamentDetail() {
       <StatGrid cols={6} className="mb-4">
         <StatBox label="Matches" value={totals.matches} />
         <StatBox label="Total points" value={totals.points} color="var(--color-accent)" />
-        <StatBox label="Chicken Dinners" value={totals.wwcd} color="#f59e0b" />
+        <StatBox label="Chicken Dinners" value={totals.wwcd} color="#d4aa5a" />
         <StatBox label="Finishes" value={totals.finishes} />
         <StatBox label="Avg placement" value={totals.avgPlacement} decimals={2} />
         <StatBox

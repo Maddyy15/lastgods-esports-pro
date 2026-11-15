@@ -66,10 +66,12 @@ export function StatBox({
   className,
   onClick,
 }) {
+  // Deliberately modest on phones. A KPI that has to truncate its own number
+  // is worse than a smaller one, and two tiles per row at 390px is tight.
   const sizes = {
-    sm: 'text-2xl',
-    md: 'text-3xl sm:text-4xl',
-    lg: 'text-4xl sm:text-5xl',
+    sm: 'text-xl sm:text-2xl',
+    md: 'text-2xl sm:text-[2.1rem]',
+    lg: 'text-3xl sm:text-5xl',
   }
 
   const isNumber = typeof value === 'number'
@@ -78,37 +80,47 @@ export function StatBox({
     <div
       onClick={onClick}
       className={cx(
-        'card-base flex flex-col justify-between gap-2 p-3 sm:p-4',
+        'card-base flex items-center gap-3 p-3.5 sm:p-4',
         'animate-[fade-up_0.45s_cubic-bezier(0.22,1,0.36,1)_both]',
-        onClick && 'cursor-pointer transition-colors hover:border-accent/40 hover:bg-card-hi',
+        onClick && 'cursor-pointer hover-gold',
         className,
       )}
     >
-      {/* Top row: label on the left, optional icon on the right */}
-      <div className="flex items-start justify-between gap-2">
-        <span className="label leading-tight">{label}</span>
-        {Icon && (
-          <Icon size={15} className="shrink-0 opacity-70" style={{ color: color || 'var(--color-accent)' }} />
-        )}
-      </div>
+      {/* Small gold icon chip, so a row of tiles scans left to right */}
+      {Icon && (
+        <span
+          className="grid size-8 shrink-0 place-items-center rounded-lg border sm:size-9"
+          style={{
+            color: color || 'var(--color-accent)',
+            borderColor: `color-mix(in srgb, ${color || 'var(--color-accent)'} 30%, transparent)`,
+            backgroundColor: `color-mix(in srgb, ${color || 'var(--color-accent)'} 12%, transparent)`,
+          }}
+        >
+          <Icon size={17} />
+        </span>
+      )}
 
-      {/* The number */}
-      <div
-        className={cx('num tabular-nums', sizes[size])}
-        style={{ color: color || 'var(--color-fg)' }}
-      >
-        {isNumber && animate ? (
-          <CountUp value={value} decimals={decimals} prefix={prefix} suffix={suffix} />
-        ) : (
-          <>
-            {prefix}
-            {isNumber ? num(value, decimals) : (value ?? '—')}
-            {suffix}
-          </>
-        )}
-      </div>
+      <div className="min-w-0 flex-1">
+        {/* The number */}
+        <div
+          className={cx('num tabular-nums', sizes[size])}
+          style={{ color: color || 'var(--color-fg)' }}
+        >
+          {isNumber && animate ? (
+            <CountUp value={value} decimals={decimals} prefix={prefix} suffix={suffix} />
+          ) : (
+            <>
+              {prefix}
+              {isNumber ? num(value, decimals) : (value ?? '—')}
+              {suffix}
+            </>
+          )}
+        </div>
 
-      {hint && <p className="text-[11px] leading-tight text-faint">{hint}</p>}
+        {/* Wraps rather than truncating — a half-written label helps nobody */}
+        <span className="label mt-1 block leading-tight">{label}</span>
+        {hint && <p className="mt-0.5 text-[11px] leading-tight text-faint">{hint}</p>}
+      </div>
     </div>
   )
 }

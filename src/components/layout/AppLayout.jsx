@@ -74,7 +74,7 @@ function Sidebar({ collapsed, onToggle }) {
                       'flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors focus-accent',
                       collapsed && 'justify-center px-0',
                       isActive
-                        ? 'bg-accent/15 text-accent'
+                        ? 'bg-accent/10 text-accent shadow-[inset_2px_0_0_0_var(--color-accent)]'
                         : 'text-muted hover:bg-card-hi hover:text-fg',
                     )
                   }

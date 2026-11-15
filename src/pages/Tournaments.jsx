@@ -155,6 +155,19 @@ function TournamentForm({ open, onClose, tournament }) {
   )
 }
 
+/**
+ * The headline result for a finishing position, with its medal tier.
+ * Returns null for anything outside the top 10 — no badge beats a dull one.
+ */
+function resultLabel(position) {
+  if (!position) return null
+  if (position === 1) return { text: 'CHAMPIONS', color: 'var(--color-tier-gold)' }
+  if (position === 2) return { text: 'RUNNER UP', color: 'var(--color-tier-silver)' }
+  if (position === 3) return { text: 'TOP 3', color: 'var(--color-tier-bronze)' }
+  if (position <= 10) return { text: `TOP ${position}`, color: 'var(--color-tier-grey)' }
+  return null
+}
+
 /* ---------------------------------------------------------------------------
  * PAGE
  * ------------------------------------------------------------------------- */
@@ -219,7 +232,7 @@ export default function Tournaments() {
       {tournaments.length > 0 && (
         <StatGrid cols={4} className="mb-4">
           <StatBox label="Tournaments played" value={totals.played} icon={Trophy} />
-          <StatBox label="Titles won" value={totals.won} color="#f59e0b" />
+          <StatBox label="Titles won" value={totals.won} color="#d4aa5a" />
           <StatBox label="Top 3 finishes" value={totals.top3} />
           <StatBox
             label="Total earnings"
@@ -258,10 +271,14 @@ export default function Tournaments() {
               style={{ animationDelay: `${i * 50}ms` }}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                <div className="flex min-w-0 gap-3">
+                  <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg border border-accent/30 bg-accent/10 text-accent">
+                    <Trophy size={17} />
+                  </span>
+                  <div className="min-w-0">
                   <Link
                     to={`/tournaments/${tournament.id}`}
-                    className="font-head text-lg font-semibold text-fg transition-colors hover:text-accent"
+                    className="font-head text-lg font-semibold tracking-wide text-fg transition-colors hover:text-accent"
                   >
                     {tournament.name}
                   </Link>
@@ -269,6 +286,14 @@ export default function Tournaments() {
                     {tournament.organizer || 'Organizer not set'}
                     {tournament.tier && ` · ${tournament.tier}`}
                   </p>
+                  {resultLabel(tournament.final_position) && (
+                    <p
+                      className="mt-1 font-head text-sm font-bold tracking-[0.18em]"
+                      style={{ color: resultLabel(tournament.final_position).color }}
+                    >
+                      {resultLabel(tournament.final_position).text}
+                    </p>
+                  )}
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <TournamentStatusBadge status={tournament.status} size="sm" />
                     {tournament.start_date && (
@@ -278,6 +303,7 @@ export default function Tournaments() {
                         {tournament.end_date && ` — ${dateShort(tournament.end_date)}`}
                       </span>
                     )}
+                  </div>
                   </div>
                 </div>
 

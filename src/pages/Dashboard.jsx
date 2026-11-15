@@ -130,15 +130,30 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* ------------------------------------------------- team header --- */}
-      <Card glow className="mb-4">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+      {/* ------------------------------------------------- team header ---
+          The helmet artwork sits on the right and fades into the card on the
+          left, so the team name and stats always sit on flat dark. On phones
+          it is dimmed further still — text readability wins over artwork. */}
+      <div className="card-base relative mb-4 min-h-[200px] overflow-hidden sm:min-h-[220px]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-full bg-cover bg-[center_38%] opacity-30 sm:w-[60%] sm:opacity-100"
+          style={{ backgroundImage: 'url(/hero-bg.jpg)' }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--color-card)_0%,var(--color-card)_32%,rgba(15,15,19,0.82)_52%,rgba(15,15,19,0.25)_100%)]"
+        />
+
+        {/* Stacks until lg: at tablet width the team name and the results
+            panel are both too wide to share a row without colliding. */}
+        <div className="relative flex flex-col items-start gap-4 p-4 lg:flex-row lg:items-center lg:p-5">
           <TeamLogo src={settings.logo_url} name={settings.team_name} size="lg" />
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-4xl leading-none font-semibold uppercase tracking-wide text-fg sm:text-5xl">
+            <h1 className="font-display text-3xl leading-none font-bold uppercase tracking-wide text-fg break-words sm:text-4xl xl:text-5xl">
               {settings.team_name}
             </h1>
-            <p className="mt-1 font-head text-sm uppercase tracking-[0.25em] text-accent">
+            <p className="mt-1.5 font-head text-sm font-semibold uppercase tracking-[0.25em] text-accent">
               {settings.tagline}
             </p>
             <p className="mt-2 text-xs text-muted">
@@ -148,13 +163,15 @@ export default function Dashboard() {
           </div>
 
           {hasMatches && (
-            <div className="w-full sm:w-auto">
+            // Its own dark panel, because this sits over the artwork and the
+            // results have to stay readable at every window width.
+            <div className="w-full rounded-xl border border-line bg-ink/80 p-3 backdrop-blur-sm lg:w-auto">
               <p className="label mb-1.5">Last 10 results</p>
               <FormStrip items={form} />
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       {!hasMatches ? (
         <EmptyState
@@ -187,7 +204,7 @@ export default function Dashboard() {
               label="Chicken Dinners"
               value={totals.wwcd}
               icon={Trophy}
-              color="#f59e0b"
+              color="#d4aa5a"
             />
             <StatBox
               label="Win rate"
@@ -377,7 +394,7 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium text-fg">{item.title}</p>
                     {item.is_pinned && (
-                      <Badge color="#f59e0b" size="sm">
+                      <Badge color="#d4aa5a" size="sm">
                         Pinned
                       </Badge>
                     )}

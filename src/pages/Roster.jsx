@@ -5,7 +5,7 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, Users } from 'lucide-react'
+import { Plus, Pencil, Trash2, Users, Crown } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useData } from '@/context/DataContext'
 import { deleteRow } from '@/lib/api'
@@ -123,27 +123,36 @@ export default function Roster() {
                 style={{ animationDelay: `${i * 45}ms` }}
               >
                 {/* Header: photo, name, roles */}
-                <div className="flex items-start gap-3">
-                  <Link to={`/players/${player.id}`} className="shrink-0">
+                <div className="relative flex flex-col items-center text-center">
+                  <Link to={`/players/${player.id}`} className="relative shrink-0">
                     <Avatar
                       src={player.photo_url}
                       name={player.ign}
                       role={player.primary_role}
-                      size="md"
+                      size="lg"
                     />
+                    {/* The in-game leader wears the crown */}
+                    {player.primary_role === 'igl' && (
+                      <span
+                        title="In-Game Leader"
+                        className="absolute -top-1.5 left-1/2 grid size-6 -translate-x-1/2 place-items-center rounded-full border border-accent/50 bg-ink text-accent"
+                      >
+                        <Crown size={13} />
+                      </span>
+                    )}
                   </Link>
 
-                  <div className="min-w-0 flex-1">
+                  <div className="mt-2.5 w-full min-w-0">
                     <Link
                       to={`/players/${player.id}`}
-                      className="block truncate font-head text-lg font-semibold text-fg transition-colors hover:text-accent"
+                      className="block truncate font-head text-xl font-bold tracking-wide text-fg transition-colors hover:text-accent"
                     >
                       {player.ign}
                     </Link>
                     <p className="truncate text-xs text-muted">
                       {player.real_name || 'Name not set'}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                    <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
                       <RoleBadges
                         primary={player.primary_role}
                         secondary={player.secondary_role}
@@ -154,7 +163,7 @@ export default function Roster() {
                   </div>
 
                   {canEditThis && (
-                    <div className="flex shrink-0 gap-1">
+                    <div className="absolute right-0 top-0 flex shrink-0 gap-1">
                       <button
                         onClick={() => setEditing(player)}
                         title="Edit"

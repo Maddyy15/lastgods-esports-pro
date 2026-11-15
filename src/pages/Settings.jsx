@@ -97,7 +97,7 @@ function TeamSection() {
     }
   }
 
-  const presets = ['#f59e0b', '#ef4444', '#22c55e', '#0ea5e9', '#a855f7', '#ec4899']
+  const presets = ['#d4aa5a', '#f1cf86', '#c7cad1', '#b07d4a', '#a855f7', '#0ea5e9']
 
   return (
     <Card>
@@ -356,7 +356,7 @@ function UsersSection() {
                     <p className="truncate text-sm font-medium text-fg">
                       {profile.full_name || '—'}
                       {isMe && (
-                        <Badge color="#f59e0b" size="sm" className="ml-2">
+                        <Badge color="#d4aa5a" size="sm" className="ml-2">
                           You
                         </Badge>
                       )}

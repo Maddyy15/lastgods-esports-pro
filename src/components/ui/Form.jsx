@@ -5,10 +5,12 @@
 import { useId } from 'react'
 import { cx } from '@/lib/format'
 
+// A focused field takes a gold border — the same signal the primary button
+// uses, so "this is where you are" always reads the same way.
 const BASE =
   'w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm text-fg ' +
   'placeholder:text-faint transition-colors focus-accent ' +
-  'focus:border-accent/60 disabled:opacity-50 disabled:cursor-not-allowed'
+  'focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed'
 
 /* ---------------------------------------------------------------------------
  * FIELD — label + control + hint/error, used to wrap every input
@@ -162,7 +164,7 @@ export function ColorInput({ label, value, onChange, hint }) {
       <div className="flex items-center gap-3">
         <input
           type="color"
-          value={value || '#f59e0b'}
+          value={value || '#d4aa5a'}
           onChange={(e) => onChange(e.target.value)}
           className="h-10 w-14 cursor-pointer rounded-lg border border-line bg-ink p-1"
         />
@@ -170,7 +172,7 @@ export function ColorInput({ label, value, onChange, hint }) {
           type="text"
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#f59e0b"
+          placeholder="#d4aa5a"
           className={cx(BASE, 'font-mono uppercase')}
         />
       </div>

@@ -203,7 +203,7 @@ export default function Records() {
             {achieved.length > 0 && (
               <div className="mb-3 flex flex-wrap gap-1.5">
                 {achieved.map((item) => (
-                  <Badge key={item.key} color="#f59e0b" size="sm">
+                  <Badge key={item.key} color="#d4aa5a" size="sm">
                     🏅 {item.label}
                   </Badge>
                 ))}

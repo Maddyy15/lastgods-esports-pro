@@ -16,8 +16,11 @@ const SIZES = {
 
 export function Avatar({ src, name, size = 'md', role, className, square = false }) {
   const [failed, setFailed] = useState(false)
-  const ring = role ? GAME_ROLES[role]?.color : 'var(--color-accent)'
   const showImage = src && !failed
+  // A photo keeps its role-coloured ring. Initials always get the gold ring —
+  // they are the brand stand-in when there is no picture, so they should look
+  // deliberate rather than like a missing image.
+  const ring = showImage && role ? GAME_ROLES[role]?.color : 'var(--color-accent)'
 
   return (
     <div
@@ -49,7 +52,21 @@ export function Avatar({ src, name, size = 'md', role, className, square = false
   )
 }
 
-/** The team logo in the sidebar and dashboard header. */
+/**
+ * The team logo in the sidebar, the top bar and on the login page.
+ *
+ * Falls back to the bundled Last Gods mark at /public/logo.png, so the brand
+ * shows even before anyone uploads a logo in Settings. Uploading one there
+ * still overrides this.
+ */
 export function TeamLogo({ src, name, size = 'md', className }) {
-  return <Avatar src={src} name={name} size={size} square className={className} />
+  return (
+    <Avatar
+      src={src || '/logo.png'}
+      name={name}
+      size={size}
+      square
+      className={className}
+    />
+  )
 }

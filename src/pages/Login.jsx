@@ -57,17 +57,37 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-[fade-up_0.5s_cubic-bezier(0.22,1,0.36,1)]">
+    <div className="relative min-h-dvh overflow-hidden">
+      {/*
+        The helmet artwork. On desktop it fills the right half and fades into
+        black towards the form; on phones it sits behind everything, heavily
+        dimmed, so the inputs stay readable. aria-hidden because it carries no
+        information — it is decoration.
+      */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="absolute inset-0 bg-cover bg-right opacity-20 lg:left-1/2 lg:opacity-100"
+          style={{ backgroundImage: 'url(/hero-bg.jpg)' }}
+        />
+        {/* Dark wash: full-screen on phones, left-to-right fade on desktop */}
+        <div className="absolute inset-0 bg-ink/80 lg:hidden" />
+        <div className="absolute inset-0 hidden lg:block bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_40%,rgba(7,7,10,0.85)_55%,rgba(7,7,10,0.3)_100%)]" />
+      </div>
+
+      {/* Form column: centred on phones, left half on desktop */}
+      <div className="relative flex min-h-dvh items-center justify-center p-4 lg:w-1/2">
+        <div className="w-full max-w-sm animate-[fade-up_0.5s_cubic-bezier(0.22,1,0.36,1)]">
         {/* Logo + wordmark */}
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent/40 bg-accent/10 shadow-[0_0_40px_-10px_var(--color-accent)]">
-            <img src="/logo.svg" alt="" className="h-10 w-10" />
-          </div>
-          <h1 className="font-display text-4xl font-semibold uppercase tracking-wide text-fg">
+          <img
+            src="/logo.png"
+            alt="Last Gods Esports"
+            className="mx-auto mb-3 h-20 w-20 rounded-2xl border border-accent/30 object-cover"
+          />
+          <h1 className="font-display text-4xl font-bold uppercase tracking-wide text-fg">
             LastGods
           </h1>
-          <p className="font-head text-sm uppercase tracking-[0.3em] text-accent">
+          <p className="font-head text-sm font-semibold uppercase tracking-[0.3em] text-accent">
             Esports
           </p>
           <p className="mt-2 text-xs text-muted">Team analytics · members only</p>
@@ -146,11 +166,12 @@ export default function Login() {
           )}
         </Card>
 
-        <p className="mt-5 text-center text-[11px] leading-relaxed text-faint">
-          No account? This platform is invite-only.
-          <br />
-          Ask the team Admin to create one for you.
-        </p>
+          <p className="mt-5 text-center text-[11px] leading-relaxed text-faint">
+            No account? This platform is invite-only.
+            <br />
+            Ask the team Admin to create one for you.
+          </p>
+        </div>
       </div>
     </div>
   )

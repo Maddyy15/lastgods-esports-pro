@@ -160,7 +160,7 @@ export default function MatchDetail() {
           label="Placement"
           value={ordinal(match.placement)}
           animate={false}
-          color={match.placement === 1 ? '#f59e0b' : undefined}
+          color={match.placement === 1 ? '#d4aa5a' : undefined}
           hint={`of ${match.teams_in_lobby} teams`}
         />
         <StatBox label="Placement pts" value={match.placement_points} />

@@ -177,7 +177,7 @@ export default function MapDetail() {
         <>
           <StatGrid cols={6} className="mb-4">
             <StatBox label="Matches" value={totals.matches} />
-            <StatBox label="Chicken Dinners" value={totals.wwcd} color="#f59e0b" />
+            <StatBox label="Chicken Dinners" value={totals.wwcd} color="#d4aa5a" />
             <StatBox label="Win rate" value={totals.winRate} decimals={1} suffix="%" />
             <StatBox label="Avg placement" value={totals.avgPlacement} decimals={2} />
             <StatBox label="Avg finishes" value={totals.avgFinishes} decimals={2} />

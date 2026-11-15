@@ -172,7 +172,7 @@ export default function Matches() {
       {filtered.length > 0 && (
         <StatGrid cols={5} className="mb-4">
           <StatBox label="Matches" value={summary.matches} />
-          <StatBox label="Chicken Dinners" value={summary.wwcd} color="#f59e0b" />
+          <StatBox label="Chicken Dinners" value={summary.wwcd} color="#d4aa5a" />
           <StatBox label="Win rate" value={summary.winRate} decimals={1} suffix="%" />
           <StatBox label="Total finishes" value={summary.finishes} />
           <StatBox label="Avg points" value={summary.avgPoints} decimals={1} />

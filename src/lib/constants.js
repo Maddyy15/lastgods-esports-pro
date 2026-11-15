@@ -8,12 +8,12 @@
  * WEBSITE PERMISSION LEVELS
  * ------------------------------------------------------------------------- */
 export const APP_ROLES = {
-  owner: { label: 'Owner', rank: 5, color: '#f59e0b' },
-  admin: { label: 'Admin', rank: 4, color: '#f97316' },
+  owner: { label: 'Owner', rank: 5, color: '#d4aa5a' },
+  admin: { label: 'Admin', rank: 4, color: '#c7cad1' },
   coach: { label: 'Coach', rank: 3, color: '#a855f7' },
-  analyst: { label: 'Analyst', rank: 3, color: '#38bdf8' },
-  player: { label: 'Player', rank: 2, color: '#22c55e' },
-  viewer: { label: 'Viewer', rank: 1, color: '#8d95a6' },
+  analyst: { label: 'Analyst', rank: 3, color: '#6fa8d6' },
+  player: { label: 'Player', rank: 2, color: '#5fb87f' },
+  viewer: { label: 'Viewer', rank: 1, color: '#a3a3ac' },
 }
 
 export const APP_ROLE_OPTIONS = Object.entries(APP_ROLES).map(([value, r]) => ({
@@ -30,11 +30,11 @@ export const ADMIN_ROLES = ['owner', 'admin']
  * BGMI IN-GAME ROLES
  * ------------------------------------------------------------------------- */
 export const GAME_ROLES = {
-  igl: { label: 'IGL', full: 'In-Game Leader', color: '#a855f7' },
-  assaulter: { label: 'Assaulter', full: 'Assaulter / Entry Fragger', color: '#ef4444' },
-  support: { label: 'Support', full: 'Support', color: '#22c55e' },
-  sniper: { label: 'Sniper', full: 'Sniper / Scout', color: '#38bdf8' },
-  filler: { label: 'Filler', full: 'Filler / Flex', color: '#f59e0b' },
+  igl: { label: 'IGL', full: 'In-Game Leader', color: '#d4aa5a' },
+  assaulter: { label: 'Assaulter', full: 'Assaulter / Entry Fragger', color: '#e06a5c' },
+  support: { label: 'Support', full: 'Support', color: '#5fb87f' },
+  sniper: { label: 'Sniper', full: 'Sniper / Scout', color: '#6fa8d6' },
+  filler: { label: 'Filler', full: 'Filler / Flex', color: '#c7cad1' },
 }
 
 export const GAME_ROLE_OPTIONS = Object.entries(GAME_ROLES).map(([value, r]) => ({
@@ -62,7 +62,7 @@ export const PLAYER_STATUS_OPTIONS = Object.entries(PLAYER_STATUS).map(([value, 
  * ------------------------------------------------------------------------- */
 export const MATCH_TYPES = {
   scrim: { label: 'Scrim', color: '#38bdf8' },
-  tournament: { label: 'Tournament', color: '#f59e0b' },
+  tournament: { label: 'Tournament', color: '#d4aa5a' },
   practice: { label: 'Practice', color: '#22c55e' },
   ranked: { label: 'Ranked', color: '#a855f7' },
 }
@@ -118,7 +118,7 @@ export const TOURNAMENT_TIER_OPTIONS = [
 
 export const EVENT_TYPES = {
   scrim: { label: 'Scrim', color: '#38bdf8' },
-  tournament: { label: 'Tournament', color: '#f59e0b' },
+  tournament: { label: 'Tournament', color: '#d4aa5a' },
   practice: { label: 'Practice', color: '#22c55e' },
   meeting: { label: 'Meeting', color: '#a855f7' },
 }
@@ -161,20 +161,23 @@ export const DEFAULT_SETTINGS = {
   team_name: 'LastGods Esports',
   tagline: 'Drop. Dominate. Repeat.',
   logo_url: null,
-  accent_color: '#f59e0b',
+  accent_color: '#d4aa5a',
   auto_calculate_totals: true,
   manual_totals: {},
   points_table: DEFAULT_POINTS_TABLE,
   rating_weights: DEFAULT_RATING_WEIGHTS,
 }
 
-/** Colour for a finishing position, used by the form strip and tables. */
+/**
+ * Colour for a finishing position — the medal tiers, used by the form strip,
+ * the placement badges and the match tables so one result always looks the
+ * same wherever it appears.
+ */
 export function placementColor(placement) {
-  if (placement === 1) return '#f59e0b' // WWCD — gold
-  if (placement <= 3) return '#22c55e' // podium — green
-  if (placement <= 5) return '#38bdf8' // top 5 — blue
-  if (placement <= 10) return '#eab308' // top 10 — yellow
-  return '#ef4444' // bottom half — red
+  if (placement === 1) return '#d4aa5a' // WWCD — gold
+  if (placement <= 3) return '#c7cad1' // podium — silver
+  if (placement <= 10) return '#b07d4a' // top 10 — bronze
+  return '#70707c' // outside the top 10 — grey
 }
 
 /** Date-range presets used by the leaderboard and other filters. */

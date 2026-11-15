@@ -7,13 +7,14 @@ import { cx } from '@/lib/format'
 /* ---------------------------------------------------------------------------
  * BUTTON
  * ------------------------------------------------------------------------- */
+// Gold fill with dark text for the one primary action on a view; everything
+// else is outlined or quiet, so the gold keeps meaning 'this is the action'.
 const BUTTON_VARIANTS = {
-  primary:
-    'bg-accent text-black hover:brightness-110 shadow-[0_0_20px_-6px_var(--color-accent)]',
-  secondary: 'bg-card-hi text-fg border border-line hover:border-accent/60 hover:bg-card',
+  primary: 'bg-accent text-ink hover:bg-accent-hi',
+  secondary: 'bg-transparent text-fg border border-line hover:border-accent/50 hover:bg-card-hi',
   ghost: 'text-muted hover:text-fg hover:bg-card-hi',
-  danger: 'bg-bad/15 text-bad border border-bad/40 hover:bg-bad/25',
-  outline: 'border border-accent/50 text-accent hover:bg-accent/10',
+  danger: 'bg-transparent text-bad border border-bad/40 hover:bg-bad/12',
+  outline: 'border border-accent/45 text-accent hover:border-accent hover:bg-accent/10',
 }
 
 const BUTTON_SIZES = {
@@ -62,9 +63,9 @@ export function Card({ className, children, hover = false, glow = false, ...prop
   return (
     <div
       className={cx(
-        'card-base p-4 sm:p-5 transition-all',
-        hover && 'hover:border-accent/40 hover:bg-card-hi',
-        glow && 'shadow-[0_0_40px_-20px_var(--color-accent)]',
+        'card-base p-4 sm:p-5',
+        hover && 'hover-gold',
+        glow && 'border-accent/25',
         className,
       )}
       {...props}
@@ -79,8 +80,8 @@ export function CardHeader({ title, subtitle, action, icon: Icon, className }) {
   return (
     <div className={cx('mb-4 flex items-start justify-between gap-3', className)}>
       <div className="min-w-0">
-        <h3 className="flex items-center gap-2 text-base font-semibold text-fg sm:text-lg">
-          {Icon && <Icon size={18} className="shrink-0 text-accent" />}
+        <h3 className="flex items-center gap-2 font-head text-lg font-semibold tracking-wide text-fg sm:text-xl">
+          {Icon && <Icon size={17} className="shrink-0 text-accent" />}
           <span className="truncate">{title}</span>
         </h3>
         {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
@@ -108,7 +109,7 @@ export function PageHeader({ title, subtitle, children }) {
 /* ---------------------------------------------------------------------------
  * BADGE / PILL
  * ------------------------------------------------------------------------- */
-export function Badge({ children, color = '#8d95a6', className, size = 'md' }) {
+export function Badge({ children, color = '#a3a3ac', className, size = 'md' }) {
   return (
     <span
       className={cx(
@@ -116,10 +117,12 @@ export function Badge({ children, color = '#8d95a6', className, size = 'md' }) {
         size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]',
         className,
       )}
+      // color-mix rather than appending "55"/"1a" to the hex, so a badge also
+      // works when it is handed a CSS variable like var(--color-accent).
       style={{
         color,
-        borderColor: `${color}55`,
-        backgroundColor: `${color}1a`,
+        borderColor: `color-mix(in srgb, ${color} 34%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
       }}
     >
       {children}
@@ -233,7 +236,7 @@ export function Tabs({ tabs, value, onChange, className }) {
   return (
     <div
       className={cx(
-        'flex gap-1 overflow-x-auto rounded-xl border border-line bg-surface p-1',
+        'flex gap-1 overflow-x-auto rounded-full border border-line bg-surface p-1',
         className,
       )}
     >
@@ -245,9 +248,9 @@ export function Tabs({ tabs, value, onChange, className }) {
           type="button"
           onClick={() => onChange(tab.value)}
           className={cx(
-            'shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus-accent',
+            'shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors focus-accent',
             value === tab.value
-              ? 'bg-accent text-black'
+              ? 'bg-accent text-ink'
               : 'text-muted hover:bg-card-hi hover:text-fg',
           )}
         >

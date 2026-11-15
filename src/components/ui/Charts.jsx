@@ -42,21 +42,29 @@ import { cx, num } from '@/lib/format'
  * COLOURS
  * ---------------------------------------------------------------------------
  * Categorical — used when each line/bar is a different THING (points vs kills,
- * player A vs player B). Assigned in this order, never cycled. The first three
- * are safe together for every kind of colour blindness; charts in this app
- * never show more than three series at once.
+ * player A vs player B). Assigned in this order, never cycled, so a colour
+ * always means the same measure.
+ *
+ * Gold is slot 1 (points) and purple slot 2 (finishes). This exact order was
+ * run through the palette validator against the card background #0f0f13 and
+ * passes every check — lightness band, chroma floor, colour-blind separation
+ * and contrast — for all five slots. Reordering it can break that, so if you
+ * change a colour here, re-validate rather than eyeballing it.
+ *
+ * Note the gold here (#b98c2e) is deeper than the interface gold (#d4aa5a).
+ * Chart marks sit in a narrower lightness band than text and buttons do.
  */
-export const SERIES = ['#d97706', '#0284c7', '#16a34a', '#9333ea', '#dc2626']
+export const SERIES = ['#b98c2e', '#a855f7', '#16a34a', '#0284c7', '#dc2626']
 
 /**
  * Sequential — used when the categories are ORDERED (placement brackets go
- * from best to worst). One hue, bright to dark, so the ranking is visible
+ * from best to worst). One gold hue, bright to dark, so the ranking reads
  * even in greyscale.
  */
-export const RAMP = ['#fcd34d', '#f3a712', '#d97706', '#b0600c', '#8f5213']
+export const RAMP = ['#f1cf86', '#dcb76a', '#c49a48', '#a87f32', '#8a6727']
 
-const GRID = '#232834'
-const AXIS = '#8d95a6'
+const GRID = '#24221d'
+const AXIS = '#a3a3ac'
 
 const AXIS_PROPS = {
   stroke: GRID,

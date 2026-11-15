@@ -19,6 +19,7 @@ import {
   TrendingDown,
   Medal,
   User,
+  Crown,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useData } from '@/context/DataContext'
@@ -238,17 +239,35 @@ export default function PlayerProfile() {
       </Link>
 
       {/* ------------------------------------------------------- header --- */}
-      <Card glow className="mb-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Avatar
-            src={player.photo_url}
-            name={player.ign}
-            role={player.primary_role}
-            size="xl"
-          />
+      <div className="card-base relative mb-4 overflow-hidden p-4 sm:p-5">
+        {/* Faint LAG monogram, purely decorative */}
+        <span
+          aria-hidden
+          className="brand-watermark absolute -right-4 -top-6 text-[11rem] leading-none sm:text-[14rem]"
+        >
+          LAG
+        </span>
+
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="relative shrink-0 self-start">
+            <Avatar
+              src={player.photo_url}
+              name={player.ign}
+              role={player.primary_role}
+              size="xl"
+            />
+            {player.primary_role === 'igl' && (
+              <span
+                title="In-Game Leader"
+                className="absolute -top-2 left-1/2 grid size-7 -translate-x-1/2 place-items-center rounded-full border border-accent/50 bg-ink text-accent"
+              >
+                <Crown size={15} />
+              </span>
+            )}
+          </div>
 
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-4xl leading-none font-semibold uppercase tracking-wide text-fg">
+            <h1 className="font-display text-5xl leading-none font-bold uppercase tracking-wide text-fg">
               {player.ign}
             </h1>
             <p className="mt-1 text-sm text-muted">
@@ -278,7 +297,7 @@ export default function PlayerProfile() {
 
           {/* Rating dial */}
           <div className="w-full shrink-0 sm:w-44">
-            <div className="rounded-xl border border-accent/30 bg-accent/5 p-3 text-center">
+            <div className="rounded-xl border border-accent/30 bg-ink/50 p-3 text-center">
               <p className="label">Player rating</p>
               <p className="num text-5xl text-accent">{rating}</p>
               <ProgressBar value={rating} className="mt-2" />
@@ -297,7 +316,7 @@ export default function PlayerProfile() {
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {derived.matches === 0 ? (
         <EmptyState
@@ -333,8 +352,8 @@ export default function PlayerProfile() {
             <StatBox label="Damage" value={derived.damage} />
             <StatBox label="Headshots" value={derived.headshots} />
             <StatBox label="Revives" value={derived.revives} />
-            <StatBox label="MVPs" value={derived.mvps} color="#f59e0b" />
-            <StatBox label="Chicken Dinners" value={derived.wwcd} color="#f59e0b" />
+            <StatBox label="MVPs" value={derived.mvps} color="#d4aa5a" />
+            <StatBox label="Chicken Dinners" value={derived.wwcd} color="#d4aa5a" />
             <StatBox label="Top 10s" value={derived.top10} />
             <StatBox
               label="Survival time"
